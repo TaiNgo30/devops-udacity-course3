@@ -1,0 +1,1 @@
+aws ecr create-repository --repository-name coworking-ecr --region us-east-1 --profile eks-local-user
