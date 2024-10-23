@@ -31,7 +31,7 @@ helm repo update
 
 2. Install PostgreSQL Helm Chart
 ```
-helm install prj3 bitnami/postgresql --set primary.persistence.enabled=false
+helm install coworking-prj bitnami/postgresql --set primary.persistence.enabled=false
 
 ```
 
