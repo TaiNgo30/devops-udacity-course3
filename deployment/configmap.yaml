@@ -7,11 +7,5 @@ data:
   DB_USER: "postgres"
   DB_HOST: "coworking-prj-postgresql"
   DB_PORT: "5432"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: env-secret
-type: Opaque
-stringData:
-  DB_PASSWORD: "qxwxqGxutl"
+
+

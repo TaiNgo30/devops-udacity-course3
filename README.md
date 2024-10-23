@@ -25,19 +25,21 @@ Set up a Postgres database using a Helm Chart.
 
 1. Set up Bitnami Repo
 ```bash
-helm repo add <REPO_NAME> https://charts.bitnami.com/bitnami
+helm repo add https://charts.bitnami.com/bitnami
+helm repo update
 ```
 
 2. Install PostgreSQL Helm Chart
 ```
-helm install <SERVICE_NAME> <REPO_NAME>/postgresql
+helm install prj3 bitnami/postgresql --set primary.persistence.enabled=false
+
 ```
 
-This should set up a Postgre deployment at `<SERVICE_NAME>-postgresql.default.svc.cluster.local` in your Kubernetes cluster. You can verify it by running `kubectl svc`
+This should set up a Postgre deployment at `coworking-prj-postgresql.default.svc.cluster.local` in your Kubernetes cluster. You can verify it by running `kubectl svc`
 
 By default, it will create a username `postgres`. The password can be retrieved with the following command:
 ```bash
-export POSTGRES_PASSWORD=$(kubectl get secret --namespace default <SERVICE_NAME>-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+export POSTGRES_PASSWORD=$(kubectl get secret --namespace default coworking-prj-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 
 echo $POSTGRES_PASSWORD
 ```
@@ -49,7 +51,7 @@ The database is accessible within the cluster. This means that when you will hav
 
 * Connecting Via Port Forwarding
 ```bash
-kubectl port-forward --namespace default svc/<SERVICE_NAME>-postgresql 5432:5432 &
+kubectl port-forward --namespace default svc/coworking-prj-postgresql 5432:5432 &
     PGPASSWORD="$POSTGRES_PASSWORD" psql --host 127.0.0.1 -U postgres -d postgres -p 5432
 ```
 
@@ -99,6 +101,24 @@ The benefit here is that it's explicitly set. However, note that the `DB_PASSWOR
 
 * Generate report for check-ins grouped by users
 `curl <BASE_URL>/api/reports/user_visits`
+
+## Set up CodeBuild
+1. Create a CodeBuild job, take your github personal access token and embed it in Secret Managers.
+2. For requirments of CodeBuild, you have to input environments required to your scret.
+3. When you already had a CodeBuild job, in IAM Role will have a service role. You have to attach AmazonEC2ContainerRegistryPowerUser policy for pushing artifacts to the image repository ECR.
+
+## Set up CloudWatch
+1. Run the following command to get the easier way to having cloudwatch into your cluster:
+```bash
+aws eks create-addon --cluster-name coworking-cluster --addon-name cloudwatch-observability
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cloudwatch-namespace.yaml
+kubectl apply -f https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cwagent/cwagent-serviceaccount.yaml
+curl -O https://raw.githubusercontent.com/aws-samples/amazon-cloudwatch-container-insights/latest/k8s-deployment-manifest-templates/deployment-mode/daemonset/container-insights-monitoring/cwagent/cwagent-configmap-enhanced.yaml
+```
+2. Modify cwagent-configmap-enhanced.yaml base on your db logs path.
+3. Apply the configmap file of cloudwatch:
+`kubectl apply -f cwagent-configmap-enhanced.yaml`
+4. Troubleshoot: When we create, in IAM Roles will have our cluster Service Role, make sure attach CloudWatchAgentServerPolicy, and our cluster nodegroup NodeInstance Role, make sure attach CloudWatchAgentServerPolicy.
 
 ## Project Instructions
 1. Set up a Postgres database with a Helm Chart

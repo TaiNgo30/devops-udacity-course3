@@ -52,19 +52,3 @@ spec:
         
       restartPolicy: Always
 
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    service: coworking
-  name: coworking
-spec:
-  type: ClusterIP
-  ports:
-    - protocol: "TCP"
-      port: 5153
-      targetPort: 5153
-  selector:
-    service: coworking

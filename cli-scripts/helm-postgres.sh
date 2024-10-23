@@ -1,6 +1,6 @@
 helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
-helm install prj3 bitnami/postgresql --set primary.persistence.enabled=false
+helm install coworking-prj bitnami/postgresql --set primary.persistence.enabled=false
 POSTGRESQL=coworking-prj-postgresql
 POSTGRES_PASSWORD=$(kubectl get secret coworking-prj-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
 kubectl port-forward svc/"$POSTGRESQL" 5432:5432 &
